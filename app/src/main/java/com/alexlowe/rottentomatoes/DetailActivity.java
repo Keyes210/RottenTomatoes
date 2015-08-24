@@ -1,54 +1,56 @@
 package com.alexlowe.rottentomatoes;
 
-import android.support.v7.app.AppCompatActivity;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Bundle;
 import android.text.Html;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-
-public class DetailActivity extends AppCompatActivity {
-
-    @Bind (R.id.ivPosterImage) ImageView ivPoster;
-    @Bind (R.id.tvTitle) TextView tvTitle;
-    @Bind (R.id.tvSynopsis) TextView tvSynopsis;
-    @Bind (R.id.tvCast) TextView tvCast;
-    @Bind (R.id.tvAudienceScore) TextView tvAudience;
-    @Bind (R.id.tvCriticsScore) TextView tvCritics;
-    @Bind (R.id.tvCriticsConsensus) TextView tvConsensus;
+public class DetailActivity extends Activity {
+    private ImageView ivPosterImage;
+    private TextView tvTitle;
+    private TextView tvSynopsis;
+    private TextView tvCast;
+    private TextView tvAudienceScore;
+    private TextView tvCriticsScore;
+    private TextView tvCriticsConsensus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        ButterKnife.bind(this);
-
-        // Use the movie to populate the data into our views
-        BoxOfficeMovie movie = (BoxOfficeMovie) getIntent()
-                .getSerializableExtra(BoxOfficeActivity.MOVIE_DETAIL_KEY);
+        // Fetch views
+        ivPosterImage = (ImageView) findViewById(R.id.ivPosterImage);
+        tvTitle = (TextView) findViewById(R.id.tvTitle);
+        tvSynopsis = (TextView) findViewById(R.id.tvSynopsis);
+        tvCast = (TextView) findViewById(R.id.tvCast);
+        tvCriticsConsensus = (TextView) findViewById(R.id.tvCriticsConsensus);
+        tvAudienceScore =  (TextView) findViewById(R.id.tvAudienceScore);
+        tvCriticsScore = (TextView) findViewById(R.id.tvCriticsScore);
+        // Load movie data
+        BoxOfficeMovie movie = (BoxOfficeMovie) getIntent().getSerializableExtra(BoxOfficeActivity.MOVIE_DETAIL_KEY);
         loadMovie(movie);
     }
 
-    private void loadMovie(BoxOfficeMovie movie) {
+    // Populate the data for the movie
+    @SuppressLint("NewApi")
+    public void loadMovie(BoxOfficeMovie movie) {
+       
         // Populate data
         tvTitle.setText(movie.getTitle());
-        tvCritics.setText(Html.fromHtml("<b>Critics Score:</b> " + movie.getCriticScore() + "%"));
-        tvAudience.setText(Html.fromHtml("<b>Audience Score:</b> " + movie.getAudienceScore() + "%"));
+        tvCriticsScore.setText(Html.fromHtml("<b>Critics Score:</b> " + movie.getCriticsScore() + "%"));
+        tvAudienceScore.setText(Html.fromHtml("<b>Audience Score:</b> " + movie.getAudienceScore() + "%"));
         tvCast.setText(movie.getCastList());
         tvSynopsis.setText(Html.fromHtml("<b>Synopsis:</b> " + movie.getSynopsis()));
-        tvConsensus.setText(Html.fromHtml("<b>Consensus:</b> " + movie.getCriticConsensus()));
-
+        tvCriticsConsensus.setText(Html.fromHtml("<b>Consensus:</b> " + movie.getCriticsConsensus()));
         // R.drawable.large_movie_poster from
         // http://content8.flixster.com/movie/11/15/86/11158674_pro.jpg -->
-        Picasso.with(this).load(movie.getLargePoster()).placeholder(R.drawable.large_poster)
-                .into(ivPoster);
-
+        Picasso.with(this).load(movie.getLargePosterUrl()).
+                placeholder(R.drawable.large_poster).
+                into(ivPosterImage);
     }
 
 }

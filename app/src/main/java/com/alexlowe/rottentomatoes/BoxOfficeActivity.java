@@ -21,50 +21,54 @@ import java.util.ArrayList;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class BoxOfficeActivity extends AppCompatActivity {
-    public static final String MOVIE_DETAIL_KEY = "movie";
+import java.util.ArrayList;
 
-    @Bind (R.id.lvMovies) ListView lvMovies;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+public class BoxOfficeActivity extends Activity {
+    private ListView lvMovies;
     private MoviesAdapter adapterMovies;
-    RtClient client;
+    private RtClient client;
+    public static final String MOVIE_DETAIL_KEY = "movie";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_box_office);
-        ButterKnife.bind(this);
-        ArrayList<BoxOfficeMovie> movieArray = new ArrayList<>();
-        adapterMovies = new MoviesAdapter(this, movieArray);
+        lvMovies = (ListView) findViewById(R.id.lvMovies);
+        ArrayList<BoxOfficeMovie> aMovies = new ArrayList<BoxOfficeMovie>();
+        adapterMovies = new MoviesAdapter(this, aMovies);
         lvMovies.setAdapter(adapterMovies);
-
         // Fetch the data remotely
         fetchBoxOfficeMovies();
         setupMovieSelectedListener();
     }
 
-
-
-    // Executes an API call to the box office endpoint, parses the results
-    // Converts them into an array of movie objects and adds them to the adapter
     private void fetchBoxOfficeMovies() {
         client = new RtClient();
         client.getBoxOfficeMovies(new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+            public void onSuccess(int code,  Header[] headers, JSONObject body) {
                 JSONArray items = null;
-
                 try {
                     // Get the movies json array
-                    items = response.getJSONArray("movies");
-
+                    items = body.getJSONArray("movies");
                     // Parse json array into array of model objects
                     ArrayList<BoxOfficeMovie> movies = BoxOfficeMovie.fromJson(items);
-
-                    // Load model objects into the adapter
-                    for (BoxOfficeMovie movie : movies) {
-                        adapterMovies.add(movie); // add movie through the adapter
-                    }
-                    adapterMovies.notifyDataSetChanged();
+                    // Load model objects into the adapter which displays them
+                    adapterMovies.addAll(movies);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -72,11 +76,10 @@ public class BoxOfficeActivity extends AppCompatActivity {
         });
     }
 
-    private void setupMovieSelectedListener() {
-        lvMovies.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    public void setupMovieSelectedListener() {
+        lvMovies.setOnItemClickListener(new OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Launch the detail view passing movie as an extra
+            public void onItemClick(AdapterView<?> adapterView, View item, int position, long rowId) {
                 Intent i = new Intent(BoxOfficeActivity.this, DetailActivity.class);
                 i.putExtra(MOVIE_DETAIL_KEY, adapterMovies.getItem(position));
                 startActivity(i);
@@ -84,5 +87,5 @@ public class BoxOfficeActivity extends AppCompatActivity {
         });
     }
 
-
 }
+
